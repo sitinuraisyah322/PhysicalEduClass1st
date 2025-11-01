@@ -618,8 +618,10 @@
    </div><!-- Admin Panel Modal -->
    <div id="adminPanel" class="modal">
     <div class="modal-content"><span class="close" onclick="closeModal()">×</span>
-     <h2>👨‍💼 Panel Admin</h2>
-     <div class="admin-panel">
+     <h2>👨‍💼 Panel Admin</h2><!-- Tab Navigation -->
+     <div style="display: flex; gap: 10px; margin-bottom: 20px;"><button class="btn btn-secondary" onclick="showAdminTab('materials')" id="materials-tab">📚 Kelola Materi</button> <button class="btn btn-secondary" onclick="showAdminTab('quiz')" id="quiz-tab">❓ Kelola Soal Kuis</button>
+     </div><!-- Materials Panel -->
+     <div class="admin-panel" id="materials-panel">
       <h3>Kelola Materi Pembelajaran</h3>
       <div class="admin-form">
        <div class="form-group"><label class="form-label">Bab:</label> <select id="admin-chapter" class="form-select"> <option value="1">Bab 1: Serunya Gerak di Tempat</option> <option value="2">Bab 2: Ayiknya Gerak Berpindah Tempat</option> <option value="3">Bab 3: Bergerak Menggunakan Benda</option> <option value="4">Bab 4: Bermain Bersama</option> <option value="5">Bab 5: Sehat dan Bugar</option> <option value="6">Bab 6: Sehat dan Aman</option> </select>
@@ -639,6 +641,31 @@
       </div>
       <div id="admin-message"></div>
       <div id="materials-list"></div>
+     </div><!-- Quiz Panel -->
+     <div class="admin-panel hidden" id="quiz-panel">
+      <h3>Kelola Soal Kuis</h3>
+      <div class="admin-form">
+       <div class="form-group"><label class="form-label">Bab:</label> <select id="quiz-chapter" class="form-select"> <option value="1">Bab 1: Serunya Gerak di Tempat</option> <option value="2">Bab 2: Ayiknya Gerak Berpindah Tempat</option> <option value="3">Bab 3: Bergerak Menggunakan Benda</option> <option value="4">Bab 4: Bermain Bersama</option> <option value="5">Bab 5: Sehat dan Bugar</option> <option value="6">Bab 6: Sehat dan Aman</option> </select>
+       </div>
+       <div class="form-group"><label class="form-label">Pertanyaan:</label> <textarea id="quiz-question" class="form-textarea" placeholder="Masukkan pertanyaan kuis"></textarea>
+       </div>
+       <div class="form-group"><label class="form-label">Pilihan A:</label> <input type="text" id="quiz-option-a" class="form-input" placeholder="Pilihan jawaban A">
+       </div>
+       <div class="form-group"><label class="form-label">Pilihan B:</label> <input type="text" id="quiz-option-b" class="form-input" placeholder="Pilihan jawaban B">
+       </div>
+       <div class="form-group"><label class="form-label">Pilihan C:</label> <input type="text" id="quiz-option-c" class="form-input" placeholder="Pilihan jawaban C">
+       </div>
+       <div class="form-group"><label class="form-label">Pilihan D:</label> <input type="text" id="quiz-option-d" class="form-input" placeholder="Pilihan jawaban D">
+       </div>
+       <div class="form-group"><label class="form-label">Jawaban Benar:</label> <select id="quiz-correct" class="form-select"> <option value="0">A</option> <option value="1">B</option> <option value="2">C</option> <option value="3">D</option> </select>
+       </div>
+       <div class="form-group"><label class="form-label">URL Gambar (Opsional):</label> <input type="url" id="quiz-image" class="form-input" placeholder="https://contoh.com/gambar.jpg"> <small style="color: #e2e8f0; font-size: 12px; margin-top: 5px; display: block;"> Masukkan URL gambar untuk soal (opsional) </small>
+       </div>
+       <div style="display: flex; gap: 15px; flex-wrap: wrap;"><button class="btn" onclick="addQuizQuestion()" id="add-quiz-btn"> <span class="loading hidden"></span> Tambah Soal </button> <button class="btn btn-secondary" onclick="loadQuizQuestions()">Lihat Semua Soal</button>
+       </div>
+      </div>
+      <div id="quiz-message"></div>
+      <div id="quiz-list"></div>
      </div>
     </div>
    </div><!-- Help Modal -->
@@ -683,6 +710,7 @@
         let quizAnswers = [];
         let isAdminLoggedIn = false;
         let materials = [];
+        let quizQuestions = [];
 
         // Chapter data
         const chapters = {
@@ -708,6 +736,16 @@
                     {
                         question: "Apa manfaat gerakan di tempat?",
                         options: ["Membuat lelah", "Menyehatkan tubuh", "Membuat bosan", "Tidak ada manfaat"],
+                        correct: 1
+                    },
+                    {
+                        question: "Posisi kaki saat melakukan jumping jack adalah?",
+                        options: ["Selalu rapat", "Dibuka dan ditutup bergantian", "Selalu terbuka", "Diangkat tinggi"],
+                        correct: 1
+                    },
+                    {
+                        question: "Saat mengangkat lutut di tempat, bagian tubuh yang bergerak adalah?",
+                        options: ["Hanya kaki", "Kaki dan tangan", "Hanya tangan", "Seluruh tubuh"],
                         correct: 1
                     }
                 ]
@@ -735,6 +773,16 @@
                         question: "Saat berlari, lutut sebaiknya?",
                         options: ["Ditekuk sedikit", "Diangkat tinggi", "Tidak ditekuk", "Ditekuk maksimal"],
                         correct: 1
+                    },
+                    {
+                        question: "Bagaimana cara melompat yang benar?",
+                        options: ["Dengan satu kaki", "Dengan kedua kaki bersamaan", "Bergantian kaki", "Tidak ada aturan"],
+                        correct: 1
+                    },
+                    {
+                        question: "Saat berguling, hal yang paling penting adalah?",
+                        options: ["Berguling cepat", "Keamanan dan pengawasan", "Berguling jauh", "Tidak perlu hati-hati"],
+                        correct: 1
                     }
                 ]
             },
@@ -761,6 +809,16 @@
                         question: "Saat melempar bola, kita menggunakan?",
                         options: ["Satu tangan", "Kedua tangan", "Kaki", "Kepala"],
                         correct: 1
+                    },
+                    {
+                        question: "Bagaimana cara menangkap bola yang benar?",
+                        options: ["Dengan satu tangan", "Dengan kedua tangan", "Dengan kaki", "Dengan kepala"],
+                        correct: 1
+                    },
+                    {
+                        question: "Saat bermain dengan simpai, bagian tubuh yang bisa digunakan adalah?",
+                        options: ["Hanya tangan", "Hanya pinggang", "Tangan, pinggang, atau kaki", "Hanya kepala"],
+                        correct: 2
                     }
                 ]
             },
@@ -786,6 +844,16 @@
                     {
                         question: "Permainan tradisional Indonesia yang disebutkan adalah?",
                         options: ["Sepak bola", "Gobak sodor", "Basket", "Voli"],
+                        correct: 1
+                    },
+                    {
+                        question: "Dalam permainan 'Simon Says', kapan kita harus melakukan gerakan?",
+                        options: ["Setiap ada perintah", "Hanya jika ada kata 'Simon Says'", "Kapan saja", "Tidak pernah"],
+                        correct: 1
+                    },
+                    {
+                        question: "Sikap yang baik saat bermain bersama adalah?",
+                        options: ["Menang sendiri", "Saling membantu", "Tidak peduli teman", "Bermain sendiri"],
                         correct: 1
                     }
                 ]
@@ -813,6 +881,16 @@
                         question: "Apa tanda tubuh yang sehat?",
                         options: ["Sering sakit", "Lemas", "Lincah dan ceria", "Mudah lelah"],
                         correct: 2
+                    },
+                    {
+                        question: "Berapa gelas air putih yang sebaiknya diminum setiap hari?",
+                        options: ["1-2 gelas", "6-8 gelas", "15 gelas", "Tidak perlu minum"],
+                        correct: 1
+                    },
+                    {
+                        question: "Kapan waktu terbaik untuk berolahraga?",
+                        options: ["Setelah makan besar", "Pagi hari", "Tengah malam", "Saat hujan"],
+                        correct: 1
                     }
                 ]
             },
@@ -839,6 +917,16 @@
                         question: "Tempat bermain yang aman adalah?",
                         options: ["Di jalan raya", "Area yang bersih dan tidak licin", "Di dekat kolam", "Di tempat gelap"],
                         correct: 1
+                    },
+                    {
+                        question: "Apa yang harus dilakukan setelah berolahraga?",
+                        options: ["Langsung duduk", "Pendinginan", "Makan es krim", "Tidur"],
+                        correct: 1
+                    },
+                    {
+                        question: "Perlengkapan keamanan yang penting saat berolahraga adalah?",
+                        options: ["Sepatu yang tepat", "Baju mahal", "Perhiasan", "Tas berat"],
+                        correct: 0
                     }
                 ]
             }
@@ -847,9 +935,15 @@
         // Data SDK Handler
         const dataHandler = {
             onDataChanged(data) {
-                materials = data;
+                // Separate materials and quiz questions
+                materials = data.filter(item => item.type === 'visual' || item.type === 'auditory' || item.type === 'kinesthetic');
+                quizQuestions = data.filter(item => item.type === 'quiz');
+                
                 if (document.getElementById('materials-list')) {
                     displayMaterials();
+                }
+                if (document.getElementById('quiz-list')) {
+                    displayQuizQuestions();
                 }
             }
         };
@@ -928,6 +1022,12 @@
             document.getElementById('content-display').classList.add('hidden');
             document.getElementById('quiz-section').classList.add('hidden');
             
+            // Remove existing quiz button container if any
+            const existingQuizButton = document.getElementById('quiz-button-container');
+            if (existingQuizButton) {
+                existingQuizButton.remove();
+            }
+            
             document.getElementById('chapterModal').style.display = 'block';
         }
 
@@ -981,16 +1081,18 @@
             
             contentDisplay.classList.remove('hidden');
             
-            // Show quiz button
-            setTimeout(() => {
-                if (document.getElementById('quiz-section').classList.contains('hidden')) {
-                    contentDisplay.innerHTML += `
-                        <div style="text-align: center; margin-top: 20px;">
-                            <button class="btn" onclick="startQuiz()">🧠 Mulai Kuis</button>
-                        </div>
-                    `;
-                }
-            }, 1000);
+            // Show quiz button only once - check if it doesn't exist already
+            if (!document.getElementById('quiz-button-container')) {
+                const quizButtonContainer = document.createElement('div');
+                quizButtonContainer.id = 'quiz-button-container';
+                quizButtonContainer.style.cssText = 'text-align: center; margin-top: 20px; padding: 20px;';
+                quizButtonContainer.innerHTML = `
+                    <button class="btn" onclick="startQuiz()" style="font-size: 18px; padding: 15px 30px;">
+                        🧠 Mulai Kuis
+                    </button>
+                `;
+                contentDisplay.appendChild(quizButtonContainer);
+            }
         }
 
         function getTypeTitle(type) {
@@ -1011,15 +1113,34 @@
         }
 
         function showQuestion() {
-            const chapter = chapters[currentChapter];
-            const question = chapter.quiz[currentQuizQuestion];
+            // Get questions from both default and custom sources
+            const defaultQuestions = chapters[currentChapter].quiz;
+            const customQuestions = quizQuestions.filter(q => q.chapter === currentChapter.toString());
+            const allQuestions = [...defaultQuestions, ...customQuestions];
+            
+            if (currentQuizQuestion >= allQuestions.length) {
+                showQuizResults();
+                return;
+            }
+            
+            const question = allQuestions[currentQuizQuestion];
             
             document.getElementById('quiz-content').innerHTML = `
                 <div class="quiz-question">
                     Soal ${currentQuizQuestion + 1}: ${question.question}
+                    ${question.image_url ? `
+                        <div style="margin: 15px 0; text-align: center;">
+                            <img src="${question.image_url}" alt="Gambar soal" 
+                                 style="max-width: 100%; max-height: 300px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display: none; background: #f56565; color: white; padding: 10px; border-radius: 5px; text-align: center;">
+                                Gambar tidak dapat dimuat
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="quiz-options">
-                    ${question.options.map((option, index) => `
+                    ${(question.options || []).map((option, index) => `
                         <div class="quiz-option" onclick="selectAnswer(${index})" data-index="${index}">
                             ${option}
                         </div>
@@ -1036,8 +1157,11 @@
             options.forEach(option => option.classList.remove('selected'));
             options[answerIndex].classList.add('selected');
             
-            const chapter = chapters[currentChapter];
-            const question = chapter.quiz[currentQuizQuestion];
+            // Get questions from both default and custom sources
+            const defaultQuestions = chapters[currentChapter].quiz;
+            const customQuestions = quizQuestions.filter(q => q.chapter === currentChapter.toString());
+            const allQuestions = [...defaultQuestions, ...customQuestions];
+            const question = allQuestions[currentQuizQuestion];
             
             // Show correct/incorrect
             setTimeout(() => {
@@ -1051,7 +1175,7 @@
                 
                 quizAnswers[currentQuizQuestion] = answerIndex;
                 
-                if (currentQuizQuestion < chapter.quiz.length - 1) {
+                if (currentQuizQuestion < allQuestions.length - 1) {
                     document.getElementById('next-btn').style.display = 'inline-block';
                 } else {
                     document.getElementById('finish-btn').style.display = 'inline-block';
@@ -1065,16 +1189,20 @@
         }
 
         function showQuizResults() {
-            const chapter = chapters[currentChapter];
+            // Get questions from both default and custom sources
+            const defaultQuestions = chapters[currentChapter].quiz;
+            const customQuestions = quizQuestions.filter(q => q.chapter === currentChapter.toString());
+            const allQuestions = [...defaultQuestions, ...customQuestions];
+            
             let correct = 0;
             
             quizAnswers.forEach((answer, index) => {
-                if (answer === chapter.quiz[index].correct) {
+                if (answer === allQuestions[index].correct) {
                     correct++;
                 }
             });
             
-            const percentage = Math.round((correct / chapter.quiz.length) * 100);
+            const percentage = Math.round((correct / allQuestions.length) * 100);
             let message = '';
             let emoji = '';
             
@@ -1094,7 +1222,7 @@
                     <div style="font-size: 4rem; margin-bottom: 20px;">${emoji}</div>
                     <h3>Hasil Kuis</h3>
                     <p style="font-size: 2rem; margin: 20px 0;">
-                        ${correct}/${chapter.quiz.length} (${percentage}%)
+                        ${correct}/${allQuestions.length} (${percentage}%)
                     </p>
                     <p style="font-size: 1.2rem;">${message}</p>
                     <button class="btn" onclick="startQuiz()" style="margin: 10px;">🔄 Ulangi Kuis</button>
@@ -1135,11 +1263,33 @@
                 setTimeout(() => {
                     closeModal();
                     document.getElementById('adminPanel').style.display = 'block';
+                    showAdminTab('materials'); // Show materials tab by default
                     loadMaterials();
                     toggleMediaFields(); // Initialize media fields visibility
                 }, 1500);
             } else {
                 messageDiv.innerHTML = '<div class="error-message">Password salah! Silakan coba lagi.</div>';
+            }
+        }
+
+        function showAdminTab(tabName) {
+            // Hide all panels
+            document.getElementById('materials-panel').classList.add('hidden');
+            document.getElementById('quiz-panel').classList.add('hidden');
+            
+            // Reset tab buttons
+            document.getElementById('materials-tab').style.background = 'linear-gradient(45deg, #74b9ff, #0984e3)';
+            document.getElementById('quiz-tab').style.background = 'linear-gradient(45deg, #74b9ff, #0984e3)';
+            
+            // Show selected panel and highlight tab
+            if (tabName === 'materials') {
+                document.getElementById('materials-panel').classList.remove('hidden');
+                document.getElementById('materials-tab').style.background = 'linear-gradient(45deg, #ff6b6b, #feca57)';
+                loadMaterials();
+            } else if (tabName === 'quiz') {
+                document.getElementById('quiz-panel').classList.remove('hidden');
+                document.getElementById('quiz-tab').style.background = 'linear-gradient(45deg, #ff6b6b, #feca57)';
+                loadQuizQuestions();
             }
         }
 
@@ -1243,6 +1393,124 @@
             }
         }
 
+        // Quiz management functions
+        async function addQuizQuestion() {
+            if (!isAdminLoggedIn) return;
+            
+            const chapter = document.getElementById('quiz-chapter').value;
+            const question = document.getElementById('quiz-question').value;
+            const optionA = document.getElementById('quiz-option-a').value;
+            const optionB = document.getElementById('quiz-option-b').value;
+            const optionC = document.getElementById('quiz-option-c').value;
+            const optionD = document.getElementById('quiz-option-d').value;
+            const correct = parseInt(document.getElementById('quiz-correct').value);
+            const imageUrl = document.getElementById('quiz-image').value;
+            const messageDiv = document.getElementById('quiz-message');
+            const addBtn = document.getElementById('add-quiz-btn');
+            const loading = addBtn.querySelector('.loading');
+            
+            if (!question || !optionA || !optionB || !optionC || !optionD) {
+                messageDiv.innerHTML = '<div class="error-message">Harap isi semua field pertanyaan dan pilihan jawaban!</div>';
+                return;
+            }
+            
+            // Show loading state
+            loading.classList.remove('hidden');
+            addBtn.disabled = true;
+            
+            const quizData = {
+                id: Date.now().toString(),
+                chapter: chapter,
+                type: 'quiz',
+                question: question,
+                options: [optionA, optionB, optionC, optionD],
+                correct: correct,
+                image_url: imageUrl || null,
+                created_at: new Date().toISOString()
+            };
+            
+            const result = await window.dataSdk.create(quizData);
+            
+            // Hide loading state
+            loading.classList.add('hidden');
+            addBtn.disabled = false;
+            
+            if (result.isOk) {
+                messageDiv.innerHTML = '<div class="success-message">Soal kuis berhasil ditambahkan!</div>';
+                // Clear form
+                document.getElementById('quiz-question').value = '';
+                document.getElementById('quiz-option-a').value = '';
+                document.getElementById('quiz-option-b').value = '';
+                document.getElementById('quiz-option-c').value = '';
+                document.getElementById('quiz-option-d').value = '';
+                document.getElementById('quiz-correct').value = '0';
+                document.getElementById('quiz-image').value = '';
+            } else {
+                messageDiv.innerHTML = '<div class="error-message">Gagal menambahkan soal kuis. Silakan coba lagi.</div>';
+            }
+        }
+
+        function loadQuizQuestions() {
+            const quizList = document.getElementById('quiz-list');
+            if (quizQuestions.length === 0) {
+                quizList.innerHTML = '<p style="text-align: center; color: #fff;">Belum ada soal kuis tambahan.</p>';
+                return;
+            }
+            
+            quizList.innerHTML = `
+                <h4 style="color: #fff; margin-top: 30px;">Daftar Soal Kuis (${quizQuestions.length}/999)</h4>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    ${quizQuestions.map(quiz => `
+                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                            <h5 style="color: #fff; margin: 0 0 10px 0;">
+                                Bab ${quiz.chapter} - ${quiz.question.substring(0, 50)}${quiz.question.length > 50 ? '...' : ''}
+                            </h5>
+                            <div style="color: #fff; margin: 5px 0; font-size: 14px;">
+                                <strong>Pilihan:</strong><br>
+                                A. ${quiz.options[0]}<br>
+                                B. ${quiz.options[1]}<br>
+                                C. ${quiz.options[2]}<br>
+                                D. ${quiz.options[3]}<br>
+                                <strong>Jawaban Benar:</strong> ${['A', 'B', 'C', 'D'][quiz.correct]}
+                            </div>
+                            ${quiz.image_url ? `
+                                <div style="margin: 10px 0;">
+                                    <img src="${quiz.image_url}" alt="Gambar soal" 
+                                         style="max-width: 200px; max-height: 150px; border-radius: 5px;"
+                                         onerror="this.style.display='none';">
+                                </div>
+                            ` : ''}
+                            <button class="btn btn-danger" onclick="deleteQuizQuestion('${quiz.__backendId}')" style="font-size: 12px; padding: 8px 16px;">
+                                🗑️ Hapus
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function displayQuizQuestions() {
+            if (document.getElementById('quiz-list')) {
+                loadQuizQuestions();
+            }
+        }
+
+        async function deleteQuizQuestion(backendId) {
+            if (!isAdminLoggedIn) return;
+            
+            const quiz = quizQuestions.find(q => q.__backendId === backendId);
+            if (!quiz) return;
+            
+            const result = await window.dataSdk.delete(quiz);
+            
+            const messageDiv = document.getElementById('quiz-message');
+            if (result.isOk) {
+                messageDiv.innerHTML = '<div class="success-message">Soal kuis berhasil dihapus!</div>';
+            } else {
+                messageDiv.innerHTML = '<div class="error-message">Gagal menghapus soal kuis. Silakan coba lagi.</div>';
+            }
+        }
+
         // Event listeners
         document.addEventListener('DOMContentLoaded', initApp);
 
@@ -1263,5 +1531,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9978ddd0962dfdce',t:'MTc2MTk3MzYyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9978f6b216a03db0',t:'MTc2MTk3NDY0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
